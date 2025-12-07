@@ -1,0 +1,45 @@
+# Example: Testing a web application login
+
+# 1. Setup configuration
+from Orchestrator import AegisBreach, AttackMode, TargetConfig
+
+
+config = {
+    "target": "https://testapp.example.com/login",
+    "authorized": True,  # Must be in authorized_targets.json
+    "mode": "intelligent"
+}
+
+# 2. Initialize with authorization token
+tester = AegisBreach(
+    auth_token="org_abc123_perm_xyz789",
+    config_path="config.json"
+)
+
+# 3. Configure target
+target = TargetConfig(
+    url="https://testapp.example.com/login",
+    username_field="email",
+    password_field="password",
+    method="POST",
+    success_indicator="dashboard",
+    failure_indicator="Invalid credentials",
+    max_attempts=500
+)
+
+# 4. Run test
+try:
+    results = tester.run(target, AttackMode.INTELLIGENT)
+    
+    # 5. Analyze results
+    successful = [r for r in results if r.get('success')]
+    print(f"Found {len(successful)} valid credentials")
+    
+    for result in successful:
+        print(f"Valid: {result['credentials']}")
+        
+except PermissionError as e:
+    print(f"Authorization failed: {e}")
+except KeyboardInterrupt:
+    tester.pause()
+    print("Test paused. Use tester.resume() to continue")

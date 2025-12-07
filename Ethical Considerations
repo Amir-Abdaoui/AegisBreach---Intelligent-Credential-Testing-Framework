@@ -1,0 +1,16 @@
+Explicit Authorization Required: Cannot run without valid auth token
+
+Scope Limitation: Only tests targets in authorized list
+
+Rate Limiting: Built-in to prevent denial-of-service
+
+No Privileged Accounts: Won't test admin/root accounts by default
+
+Full Audit Trail: All attempts logged with timestamps
+
+Safe-Test Mode: Can test against local mock server first
+
+Automatic Pause: Pauses if suspicious activity detected
+
+This framework represents a next-generation approach to credential testing that prioritizes intelligence, adaptation, and ethical compliance over brute force. It's designed for professional security assessments where precision and stealth are more valuable than raw speed.
+

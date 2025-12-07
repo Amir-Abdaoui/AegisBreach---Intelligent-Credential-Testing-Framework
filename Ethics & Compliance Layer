@@ -1,0 +1,73 @@
+from ast import Dict, List
+import datetime
+import json
+
+
+class EthicsCompliance:
+    def __init__(self, auth_token: str):
+        self.auth_token = auth_token
+        self.start_time = None
+        self.activity_log = []
+        
+        # Load authorized scope
+        self.authorized_scope = self._load_authorized_scope()
+    
+    def log_start(self, target: str):
+        """Log start of testing session"""
+        self.start_time = datetime.now()
+        
+        log_entry = {
+            'action': 'session_start',
+            'target': target,
+            'timestamp': self.start_time.isoformat(),
+            'auth_token': self.auth_token[:8] + '...',  # Partial for logs
+            'authorized': target in self.authorized_scope
+        }
+        
+        self.activity_log.append(log_entry)
+        
+        if not log_entry['authorized']:
+            raise PermissionError(f"Target {target} not in authorized scope")
+    
+    def validate_attempt(self, credentials: Dict, target: str) -> bool:
+        """Validate if this attempt is within ethical bounds"""
+        # Check for forbidden patterns (admin accounts, etc.)
+        forbidden_users = ['admin', 'root', 'administrator']
+        if credentials.get('username', '').lower() in forbidden_users:
+            self.log_warning(f"Attempt on privileged account: {credentials['username']}")
+            return False
+        
+        # Check rate limiting compliance
+        recent_attempts = self._get_recent_attempts(5)  # Last 5 minutes
+        if len(recent_attempts) > 100:  # Too many attempts
+            self.log_warning("Rate limit exceeded for ethical compliance")
+            return False
+        
+        return True
+    
+    def get_log(self) -> List[Dict]:
+        """Get compliance log for reporting"""
+        return self.activity_log
+    
+    def _load_authorized_scope(self) -> List[str]:
+        """Load authorized targets from file"""
+        try:
+            with open('authorized_scope.json', 'r') as f:
+                scope = json.load(f)
+            return scope.get('targets', [])
+        except FileNotFoundError:
+            return ['localhost', '127.0.0.1', 'test.example.com']
+    
+    def _get_recent_attempts(self, minutes: int) -> List:
+        """Get attempts from last N minutes"""
+        cutoff = datetime.now().timestamp() - (minutes * 60)
+        return [log for log in self.activity_log 
+                if datetime.fromisoformat(log['timestamp']).timestamp() > cutoff]
+    
+    def log_warning(self, message: str):
+        """Log warning to activity log"""
+        self.activity_log.append({
+            'action': 'warning',
+            'message': message,
+            'timestamp': datetime.now().isoformat()
+        })

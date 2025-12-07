@@ -1,0 +1,11 @@
+┌─────────────────────────────────────────────────────┐
+│                 AegisBreach Framework                │
+├─────────────────────────────────────────────────────┤
+│  Core Modules:                                       │
+│  1. Control Plane (Orchestrator)                    │
+│  2. Intelligence Engine (AI/ML)                     │
+│  3. Attack Engine (Modular)                         │
+│  4. Evasion & Stealth Module                        │
+│  5. Monitoring & Dashboard                          │
+│  6. Ethics & Compliance Layer                       │
+└─────────────────────────────────────────────────────┘

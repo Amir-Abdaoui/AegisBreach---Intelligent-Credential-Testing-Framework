@@ -1,0 +1,47 @@
+import datetime
+from typing import Dict
+
+
+class Dashboard:
+    def __init__(self):
+        self.stats = {
+            'total_attempts': 0,
+            'successful': 0,
+            'failed': 0,
+            'avg_response_time': 0,
+            'start_time': datetime.now()
+        }
+        
+    def update(self, result: Dict, attempt_num: int):
+        """Update dashboard with latest result"""
+        self.stats['total_attempts'] += 1
+        
+        if result.get('success'):
+            self.stats['successful'] += 1
+            status = "✓ SUCCESS"
+        else:
+            self.stats['failed'] += 1
+            status = "✗ FAILED"
+        
+        # Update average response time
+        if result.get('response_time'):
+            current_avg = self.stats['avg_response_time']
+            n = self.stats['total_attempts']
+            self.stats['avg_response_time'] = ((current_avg * (n-1)) + result['response_time']) / n
+        
+        # Display update every 10 attempts
+        if attempt_num % 10 == 0:
+            self._display_status()
+    
+    def _display_status(self):
+        """Display current status in console"""
+        print("\n" + "="*60)
+        print(f"AegisBreach - Session Status")
+        print("="*60)
+        print(f"Attempts: {self.stats['total_attempts']}")
+        print(f"Successful: {self.stats['successful']}")
+        print(f"Failed: {self.stats['failed']}")
+        print(f"Success Rate: {(self.stats['successful']/max(self.stats['total_attempts'],1))*100:.1f}%")
+        print(f"Avg Response Time: {self.stats['avg_response_time']:.2f}s")
+        print(f"Running Time: {datetime.now() - self.stats['start_time']}")
+        print("="*60)

@@ -1,0 +1,22 @@
+{
+    "target": "https://testapp.example.com/login",
+    "mode": "intelligent",
+    "evasion": {
+        "use_proxies": false,
+        "jitter_level": "high",
+        "header_rotation": true
+    },
+    "intelligence": {
+        "learn_patterns": true,
+        "context": {
+            "language": "english",
+            "region": "US",
+            "industry": "technology"
+        }
+    },
+    "ethics": {
+        "max_attempts_per_account": 100,
+        "no_privileged_accounts": true,
+        "audit_logging": true
+    }
+}

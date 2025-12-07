@@ -1,0 +1,81 @@
+from datetime import datetime
+import random
+from typing import Dict
+
+
+class AttackEngine:
+    def __init__(self):
+        self.mutation_rules = [
+            lambda x: x + '123',
+            lambda x: x + '!',
+            lambda x: x.capitalize(),
+            lambda x: x.replace('a', '@'),
+            lambda x: x.replace('o', '0'),
+            lambda x: x + str(datetime.now().year)[-2:],
+            lambda x: x[::-1],  # Reverse
+        ]
+        
+        self.context_patterns = {
+            'english': ['password', 'qwerty', 'admin', 'welcome'],
+            'spanish': ['contraseña', 'bienvenido', 'administrador'],
+            'german': ['passwort', 'willkommen', 'administrator']
+        }
+    
+    def generate_credentials(self, strategy: Dict) -> Dict:
+        """Generate credentials based on attack strategy"""
+        if strategy['primary_technique'] == 'probabilistic_dictionary':
+            username = self._generate_username(strategy)
+            password = self._generate_probabilistic_password(strategy)
+        elif strategy['primary_technique'] == 'rule_based_mutation':
+            username = self._generate_username(strategy)
+            password = self._apply_mutation_rules(strategy.get('base_password', 'password'))
+        else:
+            # Brute-force generation
+            username = self._generate_username(strategy)
+            password = self._generate_bruteforce(strategy)
+        
+        return {'username': username, 'password': password}
+    
+    def _generate_probabilistic_password(self, strategy: Dict) -> str:
+        """Generate password using weighted probabilities"""
+        # Get context-based wordlist
+        context = strategy.get('context', {})
+        base_words = self.context_patterns.get(context.get('language', 'english'), [])
+        
+        # Add common patterns
+        base_words.extend(['Summer2023!', 'Company123', 'Welcome@2024'])
+        
+        # Apply probabilistic selection
+        weighted = self.generate_probabilistic_wordlist(base_words, context)
+        
+        # Select based on weights
+        total_weight = sum(w for _, w in weighted)
+        pick = random.uniform(0, total_weight)
+        current = 0
+        
+        for word, weight in weighted:
+            current += weight
+            if current >= pick:
+                selected = word
+                break
+        else:
+            selected = weighted[0][0]
+        
+        # Apply random mutation
+        if random.random() > 0.5:
+            mutation = random.choice(self.mutation_rules)
+            selected = mutation(selected)
+        
+        return selected
+    
+    def _apply_mutation_rules(self, base_password: str) -> str:
+        """Apply mutation rules to base password"""
+        # Apply 1-3 random mutations
+        num_mutations = random.randint(1, 3)
+        mutations = random.sample(self.mutation_rules, num_mutations)
+        
+        result = base_password
+        for mutation in mutations:
+            result = mutation(result)
+        
+        return result

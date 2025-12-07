@@ -1,0 +1,11 @@
+{
+    "client": "ACME Corp Security Test",
+    "date": "2024-01-15",
+    "targets": [
+        "https://testapp.example.com",
+        "192.168.1.100",
+        "staging.acmecorp.com"
+    ],
+    "scope": "Web application login forms only",
+    "contact": "security@acmecorp.com"
+}
